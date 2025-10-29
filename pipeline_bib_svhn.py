@@ -52,6 +52,7 @@ class Config:
     MIN_DIGITS_COUNT = 3
     # Número máximo de dígitos (para filtrar ruido)
     MAX_DIGITS_COUNT = 4
+    
     # Debounce: no registrar el mismo dorsal más de una vez en este número de segundos
     DEBOUNCE_SECONDS = 15
 

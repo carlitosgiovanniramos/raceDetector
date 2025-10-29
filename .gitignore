@@ -1,5 +1,26 @@
-*.pptx
-.tmp.driveupload/
-.ipynb_checkpoints/
-__pycache__
+﻿# Ignore virtual environments
+venv/
+.venv/
+ENV/
+env/
 
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Output / logs
+output/
+*.log
+
+# Editor / OS files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Weights and large models (use LFS or external storage instead)
+# weights-classes/*.weights
