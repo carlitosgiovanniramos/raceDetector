@@ -68,6 +68,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "" 
 Write-Host "  -> Installing OpenCV..." -ForegroundColor Cyan
 pip install opencv-python opencv-contrib-python
+pip install openpyxl
 
 Write-Host "" 
 Write-Host "  -> Installing scientific packages..." -ForegroundColor Cyan
