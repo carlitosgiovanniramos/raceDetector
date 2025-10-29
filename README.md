@@ -149,7 +149,7 @@ Verifica que la tarjeta GPU sea compatible con CUDA 11.8. Si no tienes GPU compa
 1) Clonar y cambiar a la rama recomendada:
 
 ```powershell
-git clone http://github.com/Saimol-Uta/BibObjectDetection
+git clone [http://github.com/Saimol-Uta/BibObjectDetection](https://github.com/carlitosgiovanniramos/raceDetector.git)
 cd BibObjectDetection
 git checkout back-4-7cb1008
 git branch
