@@ -150,8 +150,7 @@ Verifica que la tarjeta GPU sea compatible con CUDA 11.8. Si no tienes GPU compa
 
 ```powershell
 git clone https://github.com/carlitosgiovanniramos/raceDetector.git
-cd BibObjectDetection
-git checkout back-4-7cb1008
+cd raceDetector
 git branch
 ```
 
