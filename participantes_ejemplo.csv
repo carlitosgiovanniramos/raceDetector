@@ -1,0 +1,11 @@
+cedula,nombre,apellido,direccion,contacto,estado_pago,numero_dorsal
+12345678,Juan,Pérez,Av. Los Jardines 123,555-1234,PAGADO,001
+87654321,María,González,Jr. Las Flores 456,555-5678,PENDIENTE,002
+11223344,Carlos,Ramírez,Calle Principal 789,555-9012,PAGADO,003
+55667788,Ana,Torres,Av. Central 321,555-3456,PAGADO,004
+99887766,Luis,Fernández,Jr. Los Olivos 654,555-7890,PENDIENTE,005
+44332211,Sofia,Mendoza,Calle Luna 987,555-2345,PAGADO,006
+66778899,Diego,Castro,Av. Sol 147,555-6789,PENDIENTE,007
+22334455,Laura,Vargas,Jr. Estrellas 258,555-0123,PAGADO,008
+33445566,Miguel,Rojas,Calle Paz 369,555-4567,PENDIENTE,009
+77889900,Carmen,Silva,Av. Libertad 741,555-8901,PAGADO,010

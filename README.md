@@ -185,14 +185,115 @@ o modo imagen:
 ```powershell
 python pipeline_bib_svhn.py --modo imagen --archivo ruta\a\imagen.jpg
 ```
+
 ---
+
+## 📋 Gestión de Participantes
+
+El sistema incluye una aplicación completa para registrar y gestionar los participantes de la carrera. Esta herramienta permite asociar los números de dorsal detectados con la información personal de cada corredor.
+
+### Archivos del módulo de gestión
+
+- `gestor_participantes.py` — Módulo backend que maneja todas las operaciones CRUD (crear, leer, actualizar, eliminar) sobre el archivo Excel de participantes.
+- `interfaz_participantes.py` — Interfaz gráfica (GUI) con tkinter para facilitar el registro y gestión de participantes.
+- `participantes.xlsx` — Archivo Excel generado automáticamente que almacena todos los datos de los participantes.
+- `participantes_ejemplo.csv` — Archivo CSV de ejemplo con 10 participantes de muestra para probar la funcionalidad de importación.
+
+### Características principales
+
+✅ **Registro completo de participantes** con los siguientes campos:
+   - Cédula/DNI (identificador único)
+   - Nombre
+   - Apellido
+   - Dirección
+   - Contacto (teléfono/email)
+   - Estado de Pago (PAGADO / PENDIENTE)
+   - Número de Dorsal (clave para relacionar con la detección)
+
+✅ **Búsqueda en tiempo real** por cédula con filtro instantáneo
+
+✅ **Operaciones CRUD completas:**
+   - ➕ Agregar nuevos participantes
+   - ✏️ Editar participantes existentes
+   - 🗑️ Eliminar participantes
+   - 👁️ Visualizar todos los participantes en tabla interactiva
+
+✅ **Importar/Exportar datos:**
+   - 📥 Importar desde archivos CSV
+   - 📤 Exportar a CSV para compartir o respaldar
+   - 💾 Almacenamiento en Excel con formato profesional
+
+✅ **Validaciones automáticas:**
+   - No permite cédulas duplicadas
+   - No permite dorsales repetidos
+   - Colores visuales según estado de pago (verde = pagado, rojo = pendiente)
+
+✅ **Estadísticas en tiempo real:**
+   - Total de participantes
+   - Cantidad de pagados vs pendientes
+   - Participantes con/sin dorsal asignado
+
+### Cómo usar la gestión de participantes
+
+1. **Ejecutar la interfaz gráfica:**
+
+```powershell
+python interfaz_participantes.py
+```
+
+2. **Agregar participantes manualmente:**
+   - Llenar el formulario en la parte inferior de la ventana
+   - Presionar el botón "➕ Agregar"
+
+3. **Importar desde CSV:**
+   - Preparar un archivo CSV con las columnas: `cedula`, `nombre`, `apellido`, `direccion`, `contacto`, `estado_pago`, `numero_dorsal`
+   - Presionar el botón "📥 Importar CSV"
+   - Seleccionar el archivo (puedes usar `participantes_ejemplo.csv` como referencia)
+
+4. **Buscar participantes:**
+   - Escribir la cédula en el campo de búsqueda superior
+   - La tabla se filtrará automáticamente mientras escribes
+
+5. **Editar o eliminar:**
+   - Hacer doble clic sobre un participante en la tabla para editarlo
+   - Seleccionar un participante y presionar "🗑️ Eliminar Seleccionado"
+
+6. **Exportar resultados:**
+   - Presionar "📤 Exportar CSV" para guardar todos los datos en un archivo
+
+### Formato del archivo CSV para importación
+
+El archivo CSV debe tener exactamente estas columnas (en este orden):
+
+```csv
+cedula,nombre,apellido,direccion,contacto,estado_pago,numero_dorsal
+12345678,Juan,Pérez,Av. Los Jardines 123,555-1234,PAGADO,001
+87654321,María,González,Jr. Las Flores 456,555-5678,PENDIENTE,002
+```
+
+**Notas importantes:**
+- `cedula`: Obligatorio, debe ser único
+- `nombre` y `apellido`: Obligatorios
+- `estado_pago`: Debe ser "PAGADO" o "PENDIENTE" (si se omite, será "PENDIENTE")
+- `numero_dorsal`: Debe ser único si se proporciona, puede estar vacío
+
+### Integración con el detector de dorsales
+
+Una vez que los participantes están registrados, el sistema de detección de dorsales (`pipeline_bib_svhn.py`) puede:
+- Buscar automáticamente el número de dorsal detectado en la base de datos
+- Mostrar en pantalla el nombre completo del corredor
+- Registrar el tiempo de paso con todos los datos del participante
+- Generar reportes completos con información personal y tiempos
+
+---
+
 ## Enfoque y Funcionamiento del Programa
 ## Fase 1: Antes de la Carrera
 - Cargar Datos: El organizador usa la "Gestión de Participantes" (4) para importar un archivo (CSV o Google Sheets) con la información de todos los inscritos: número de bib, nombre, categoría, etc.
 - Configurar el Sistema: Luego, en el panel de "Configuración y Calibración" (5), el organizador ajusta todo lo necesario:
- - Selecciona la cámara que se usará para leer los dorsales.
- - Ajusta la sensibilidad de la detección.
- - Elige cómo se mostrará la información en las pantallas (un solo monitor, dos monitores, etc.), usando las opciones de "Vista de Cámara y Configuración de Pantallas" (2).
+  - Selecciona la cámara que se usará para leer los dorsales.
+  - Ajusta la sensibilidad de la detección.
+  - Elige cómo se mostrará la información en las pantallas (un solo monitor, dos monitores, etc.), usando las opciones de "Vista de Cámara y Configuración de Pantallas" (2).
 
 ## Fase 2: Durante la Carrera
 - Iniciar: El organizador usa el "Panel de Control" (3) para presionar "Iniciar carrera". Esto activa el cronómetro general del evento.
