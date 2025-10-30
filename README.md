@@ -185,5 +185,26 @@ o modo imagen:
 ```powershell
 python pipeline_bib_svhn.py --modo imagen --archivo ruta\a\imagen.jpg
 ```
+---
+## Enfoque y Funcionamiento del Programa
+## Fase 1: Antes de la Carrera
+- Cargar Datos: El organizador usa la "Gestión de Participantes" (4) para importar un archivo (CSV o Google Sheets) con la información de todos los inscritos: número de bib, nombre, categoría, etc.
+- Configurar el Sistema: Luego, en el panel de "Configuración y Calibración" (5), el organizador ajusta todo lo necesario:
+ - Selecciona la cámara que se usará para leer los dorsales.
+ - Ajusta la sensibilidad de la detección.
+ - Elige cómo se mostrará la información en las pantallas (un solo monitor, dos monitores, etc.), usando las opciones de "Vista de Cámara y Configuración de Pantallas" (2).
 
+## Fase 2: Durante la Carrera
+- Iniciar: El organizador usa el "Panel de Control" (3) para presionar "Iniciar carrera". Esto activa el cronómetro general del evento.
+- Detección en Vivo: A medida que cada corredor cruza la meta, el sistema hace lo siguiente:
+  - La cámara detecta el número de bib.
+  - El software busca ese número en la base de datos de participantes que se cargó previamente.
+  - Inmediatamente, la "Pantalla Principal" (1) se pone en verde y muestra en grande los datos del corredor: su número, nombre, tiempo y posición.
+  - Al mismo tiempo, la "Vista de Cámara" (2) puede mostrarle al corredor su imagen pasando por la meta, dándole una confirmación visual.
+- Operación: Durante la carrera, el organizador puede usar el "Panel de Control" (3) para pausar la detección si es necesario o monitorear el conteo de corredores.
+
+## Fase 3: Después de la Carrera
+- Finalizar: El organizador presiona "Detener / Finalizar carrera" en el "Panel de Control" (3).
+- Generar Resultados: Finalmente, va a la sección de "Resultados y Reportes" (6). Aquí puede ver una tabla con todos los corredores, sus tiempos y posiciones.
+- Exportar y Compartir: Desde esta pantalla, puede filtrar los resultados por categoría (ej. "Solo mujeres de 30-39 años") y exportarlos a un archivo CSV, Excel o PDF para publicarlos en la web o imprimirlos.
 ---
