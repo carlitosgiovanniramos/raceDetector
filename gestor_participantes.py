@@ -166,6 +166,10 @@ class GestorParticipantes:
             
             for fila in range(2, ws.max_row + 1):
                 if str(ws.cell(row=fila, column=1).value) == str(cedula):
+                    # Leer el dorsal y formatearlo automáticamente
+                    dorsal_raw = ws.cell(row=fila, column=7).value
+                    dorsal_formateado = self._formatear_dorsal(dorsal_raw) if dorsal_raw else ""
+                    
                     return {
                         "fila": fila,
                         "cedula": ws.cell(row=fila, column=1).value,
@@ -174,7 +178,7 @@ class GestorParticipantes:
                         "direccion": ws.cell(row=fila, column=4).value,
                         "contacto": ws.cell(row=fila, column=5).value,
                         "estado_pago": ws.cell(row=fila, column=6).value,
-                        "numero_dorsal": ws.cell(row=fila, column=7).value
+                        "numero_dorsal": dorsal_formateado
                     }
             return None
         except Exception as e:
@@ -189,12 +193,18 @@ class GestorParticipantes:
             dict o None: Datos del participante si existe
         """
         try:
+            # Formatear el dorsal de búsqueda para comparar
+            dorsal_busqueda = self._formatear_dorsal(numero_dorsal)
+            
             wb = openpyxl.load_workbook(self.archivo)
             ws = wb.active
             
             for fila in range(2, ws.max_row + 1):
                 dorsal_cell = ws.cell(row=fila, column=7).value
-                if str(dorsal_cell) == str(numero_dorsal):
+                # Formatear el dorsal leído del Excel
+                dorsal_formateado = self._formatear_dorsal(dorsal_cell) if dorsal_cell else ""
+                
+                if dorsal_formateado == dorsal_busqueda:
                     return {
                         "fila": fila,
                         "cedula": ws.cell(row=fila, column=1).value,
@@ -203,7 +213,7 @@ class GestorParticipantes:
                         "direccion": ws.cell(row=fila, column=4).value,
                         "contacto": ws.cell(row=fila, column=5).value,
                         "estado_pago": ws.cell(row=fila, column=6).value,
-                        "numero_dorsal": dorsal_cell
+                        "numero_dorsal": dorsal_formateado
                     }
             return None
         except Exception as e:
@@ -223,6 +233,10 @@ class GestorParticipantes:
             ws = wb.active
             
             for fila in range(2, ws.max_row + 1):
+                # Leer el dorsal y formatearlo automáticamente
+                dorsal_raw = ws.cell(row=fila, column=7).value
+                dorsal_formateado = self._formatear_dorsal(dorsal_raw) if dorsal_raw else ""
+                
                 participante = {
                     "fila": fila,
                     "cedula": ws.cell(row=fila, column=1).value,
@@ -231,7 +245,7 @@ class GestorParticipantes:
                     "direccion": ws.cell(row=fila, column=4).value,
                     "contacto": ws.cell(row=fila, column=5).value,
                     "estado_pago": ws.cell(row=fila, column=6).value,
-                    "numero_dorsal": ws.cell(row=fila, column=7).value
+                    "numero_dorsal": dorsal_formateado
                 }
                 participantes.append(participante)
             

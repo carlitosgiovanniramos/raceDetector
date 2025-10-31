@@ -78,6 +78,10 @@ class InterfazParticipantes:
                  bg="#9b59b6", fg="white", font=('Arial', 10, 'bold'),
                  padx=15, pady=5, cursor="hand2").pack(side=tk.LEFT, padx=5)
         
+        tk.Button(frame_busqueda, text="🔄 Recargar Tabla", command=self.recargar_tabla,
+                 bg="#8e44ad", fg="white", font=('Arial', 10, 'bold'),
+                 padx=15, pady=5, cursor="hand2").pack(side=tk.LEFT, padx=5)
+        
         # ===== MARCO CENTRAL: TABLA DE PARTICIPANTES =====
         frame_tabla = tk.Frame(self.root, bg="#f0f0f0")
         frame_tabla.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -192,7 +196,7 @@ class InterfazParticipantes:
             ("✏️ Editar Seleccionado", self.editar_participante_seleccionado, "#f39c12"),
             ("🗑️ Eliminar Seleccionado", self.eliminar_participante, "#e74c3c"),
             ("🧹 Limpiar Campos", self.limpiar_formulario, "#95a5a6"),
-            ("📥 Importar CSV", self.importar_csv, "#3498db"),
+            ("� Importar CSV", self.importar_csv, "#3498db"),
             ("📤 Exportar CSV", self.exportar_csv, "#1abc9c")
         ]
         
@@ -425,6 +429,18 @@ class InterfazParticipantes:
             if entry.cget('state') == 'readonly':
                 entry.config(state='normal')
         self.combo_estado.set("PENDIENTE")
+    
+    def recargar_tabla(self):
+        """Recarga los datos de la tabla desde el archivo Excel"""
+        try:
+            self.actualizar_tabla()
+            messagebox.showinfo("🔄 Tabla Recargada", 
+                              "Los datos se han recargado correctamente desde la base de datos.")
+            self.label_estado.config(text="🔄 Tabla recargada exitosamente")
+        except Exception as e:
+            messagebox.showerror("❌ Error al Recargar", 
+                               f"No se pudieron recargar los datos:\n{str(e)}")
+            self.label_estado.config(text=f"❌ Error al recargar: {str(e)}")
     
     def buscar_participante(self):
         """Busca un participante por cédula"""
