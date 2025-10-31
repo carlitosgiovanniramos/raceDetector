@@ -82,6 +82,11 @@ class InterfazParticipantes:
                  bg="#8e44ad", fg="white", font=('Arial', 10, 'bold'),
                  padx=15, pady=5, cursor="hand2").pack(side=tk.LEFT, padx=5)
         
+        # Botón Volver (al final de la barra)
+        tk.Button(frame_busqueda, text="◀️ Volver", command=self.volver_menu_principal,
+                 bg="#e74c3c", fg="white", font=('Arial', 10, 'bold'),
+                 padx=15, pady=5, cursor="hand2").pack(side=tk.RIGHT, padx=5)
+        
         # ===== MARCO CENTRAL: TABLA DE PARTICIPANTES =====
         frame_tabla = tk.Frame(self.root, bg="#f0f0f0")
         frame_tabla.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -208,11 +213,15 @@ class InterfazParticipantes:
                            relief=tk.FLAT, bd=0)
             btn.pack(pady=2, fill=tk.X)
         
-        # Bind del mouse wheel para scroll
-        def _on_mousewheel(event):
+        # Bind del mouse wheel para scroll SOLO en el área del formulario inferior
+        def _on_mousewheel_canvas(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        # Vincular solo cuando el mouse está sobre el canvas o scrollable_frame
+        canvas.bind("<Enter>", lambda e: canvas.bind("<MouseWheel>", _on_mousewheel_canvas))
+        canvas.bind("<Leave>", lambda e: canvas.unbind("<MouseWheel>"))
+        scrollable_frame.bind("<Enter>", lambda e: canvas.bind("<MouseWheel>", _on_mousewheel_canvas))
+        scrollable_frame.bind("<Leave>", lambda e: canvas.unbind("<MouseWheel>"))
         
         # ===== BARRA DE ESTADO =====
         self.frame_estado = tk.Frame(self.root, bg="#34495e", padx=10, pady=5)
@@ -540,6 +549,14 @@ class InterfazParticipantes:
         tk.Button(ventana, text="Cerrar", command=ventana.destroy,
                  bg="#34495e", fg="white", font=('Arial', 10, 'bold'),
                  padx=20, pady=8).pack(pady=15)
+    
+    def volver_menu_principal(self):
+        """Cierra la ventana de gestión de participantes y vuelve al menú principal"""
+        respuesta = messagebox.askyesno("◀️ Volver al Menú Principal",
+                                       "¿Desea volver al menú principal?\n\n"
+                                       "Los cambios ya han sido guardados automáticamente.")
+        if respuesta:
+            self.root.destroy()
     
     def ordenar_por_columna(self, columna):
         """Ordena la tabla por la columna seleccionada"""
