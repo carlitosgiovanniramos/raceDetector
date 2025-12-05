@@ -18,6 +18,7 @@ import argparse
 import time
 from datetime import datetime
 import pandas as pd
+from gestor_participantes import GestorParticipantes
 
 
 class Config:
@@ -142,16 +143,6 @@ def clamp(x, a, b):
     return max(a, min(b, x))
 
 
-def process_image(image_path, net_bib, layers_bib, names_bib, net_svhn, layers_svhn, names_svhn, conf_bib, conf_svhn, show_window=True):
-    img = cv2.imread(str(image_path))
-    if img is None:
-        raise FileNotFoundError(f"No se pudo leer la imagen: {image_path}")
-
-    orig = img.copy()
-    detections_bib = detect_with_net(net_bib, layers_bib, img, Config.INPUT_SIZE_RBNR, conf_bib)
-
-    results = []
-
 # Cache de registros recientes para debounce: dorsal_str -> timestamp (seconds)
 recent_registrations = {}
 
@@ -167,6 +158,17 @@ def should_register(dorsal_str: str) -> bool:
         recent_registrations[dorsal_str] = now_ts
         return True
     return False
+
+
+def process_image(image_path, net_bib, layers_bib, names_bib, net_svhn, layers_svhn, names_svhn, conf_bib, conf_svhn, show_window=True):
+    img = cv2.imread(str(image_path))
+    if img is None:
+        raise FileNotFoundError(f"No se pudo leer la imagen: {image_path}")
+
+    orig = img.copy()
+    detections_bib = detect_with_net(net_bib, layers_bib, img, Config.INPUT_SIZE_RBNR, conf_bib)
+
+    results = []
 
     for det in detections_bib:
         x, y, w, h = det['bbox']
@@ -287,8 +289,16 @@ def should_register(dorsal_str: str) -> bool:
             dorsal_str = str(numero).strip()
             if should_register(dorsal_str):
                 try:
+                    # Buscar participante en la base de datos
+                    participante = buscar_participante_por_dorsal(dorsal_str)
+                    if participante:
+                        nombre_completo = f"{participante.get('nombre', '')} {participante.get('apellido', '')}"
+                        print(f"[✅ DETECTADO] Dorsal {dorsal_str} - {nombre_completo}")
+                    else:
+                        print(f"[⚠️ DETECTADO] Dorsal {dorsal_str} - No encontrado en base de datos")
+                    
                     out_excel = Path('registros_dorsales.xlsx')
-                    added_row = ensure_excel_and_append(dorsal_str, out_excel)
+                    added_row = ensure_excel_and_append(dorsal_str, out_excel, participante)
                     if added_row is not None:
                         print(f"[REGISTRO] Añadida fila: {added_row}")
                 except Exception as e:
@@ -310,19 +320,50 @@ def should_register(dorsal_str: str) -> bool:
     return str(out_path), results
 
 
-def ensure_excel_and_append(dorsal, excel_path: Path):
-    """Asegura que el archivo Excel existe y añade una fila con Posición, Dorsal, HoraLlegada.
+# Instancia global del gestor de participantes
+gestor_participantes = GestorParticipantes()
+
+
+def buscar_participante_por_dorsal(dorsal_str: str):
+    """
+    Busca un participante en la base de datos por su número de dorsal.
+    
+    Args:
+        dorsal_str: Número de dorsal como string
+        
+    Returns:
+        dict o None: Datos del participante si existe
+    """
+    try:
+        participante = gestor_participantes.buscar_por_dorsal(dorsal_str)
+        return participante
+    except Exception as e:
+        print(f"[!] Error buscando participante: {e}")
+        return None
+
+
+def ensure_excel_and_append(dorsal, excel_path: Path, participante_info: dict = None):
+    """Asegura que el archivo Excel existe y añade una fila con datos del corredor.
     Si el dorsal ya está registrado, no lo duplica y devuelve None.
     Devuelve la fila añadida como dict si se añadió.
+    
+    Args:
+        dorsal: Número de dorsal detectado
+        excel_path: Ruta al archivo Excel de registros
+        participante_info: Diccionario con datos del participante (opcional)
     """
     excel_path = Path(excel_path)
-    columnas = ['Posición', 'Dorsal', 'HoraLlegada']
+    columnas = ['Posición', 'Dorsal', 'Nombre', 'Apellido', 'HoraLlegada', 'Estado']
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if excel_path.exists():
         # leer existing
         try:
             df = pd.read_excel(excel_path)
+            # Asegurar que tiene todas las columnas necesarias
+            for col in columnas:
+                if col not in df.columns:
+                    df[col] = ''
         except Exception:
             # si hay problema leyendo, crear nuevo
             df = pd.DataFrame(columns=columnas)
@@ -344,7 +385,25 @@ def ensure_excel_and_append(dorsal, excel_path: Path):
     else:
         posicion = len(df) + 1
 
-    nueva = {'Posición': posicion, 'Dorsal': dorsal_str, 'HoraLlegada': now}
+    # Construir fila con información del participante
+    if participante_info:
+        nueva = {
+            'Posición': posicion, 
+            'Dorsal': dorsal_str, 
+            'Nombre': participante_info.get('nombre', 'Desconocido'),
+            'Apellido': participante_info.get('apellido', ''),
+            'HoraLlegada': now,
+            'Estado': '✅ Registrado'
+        }
+    else:
+        nueva = {
+            'Posición': posicion, 
+            'Dorsal': dorsal_str, 
+            'Nombre': '⚠️ No encontrado',
+            'Apellido': '',
+            'HoraLlegada': now,
+            'Estado': '⚠️ Sin datos'
+        }
 
     # Añadir la fila usando pd.concat para compatibilidad con pandas 2.x
     new_row_df = pd.DataFrame([nueva])
@@ -516,13 +575,32 @@ def main():
                         # dibujar bib
                         cv2.rectangle(frame, (x1, y1), (x2, y2), Config.COLOR_BIB, 2)
                         if numero_cam and accepted_cam:
-                            cv2.putText(frame, numero_cam, (x1, max(16, y1 - 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, Config.COLOR_BIB, 3)
-                            # Registrar en Excel (modo cámara) solo si el número fue aceptado y pasa debounce
+                            # Buscar participante en la base de datos
                             dorsal_str = str(numero_cam).strip()
+                            participante = buscar_participante_por_dorsal(dorsal_str)
+                            
+                            # Mostrar número y nombre en pantalla
+                            if participante:
+                                nombre_completo = f"{participante.get('nombre', '')} {participante.get('apellido', '')}"
+                                texto_mostrar = f"{numero_cam} - {nombre_completo}"
+                                # Dibujar fondo verde para el nombre
+                                (tw, th), _ = cv2.getTextSize(texto_mostrar, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
+                                cv2.rectangle(frame, (x1, max(0, y1 - 50)), (x1 + tw + 10, y1 - 10), (0, 200, 0), -1)
+                                cv2.putText(frame, texto_mostrar, (x1 + 5, max(16, y1 - 25)), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                            else:
+                                cv2.putText(frame, numero_cam, (x1, max(16, y1 - 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, Config.COLOR_BIB, 3)
+                            
+                            # Registrar en Excel (modo cámara) solo si el número fue aceptado y pasa debounce
                             if should_register(dorsal_str):
                                 try:
+                                    if participante:
+                                        nombre_completo = f"{participante.get('nombre', '')} {participante.get('apellido', '')}"
+                                        print(f"[✅ DETECTADO] Dorsal {dorsal_str} - {nombre_completo}")
+                                    else:
+                                        print(f"[⚠️ DETECTADO] Dorsal {dorsal_str} - No encontrado en base de datos")
+                                    
                                     out_excel = Path('registros_dorsales.xlsx')
-                                    added = ensure_excel_and_append(dorsal_str, out_excel)
+                                    added = ensure_excel_and_append(dorsal_str, out_excel, participante)
                                     if added is not None:
                                         print(f"[REGISTRO] Añadida fila: {added}")
                                 except Exception as e:
