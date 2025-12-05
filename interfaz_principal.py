@@ -308,14 +308,48 @@ class InterfazPrincipal:
                                f"No se pudo abrir la gestión de participantes:\n{str(e)}")
     
     def calibrar_dispositivos(self):
-        """Función para calibrar dispositivos (en desarrollo)"""
-        messagebox.showinfo("⚙️ Calibración de Dispositivos", 
-                          "Esta funcionalidad está en desarrollo.\n\n"
-                          "Próximamente podrás:\n"
-                          "• Calibrar cámaras de detección\n"
-                          "• Configurar sensores de tiempo\n"
-                          "• Ajustar parámetros de reconocimiento\n"
-                          "• Realizar pruebas de sistema")
+        """Abre la interfaz de calibración de dispositivos"""
+        try:
+            # Ocultar ventana principal temporalmente
+            self.root.withdraw()
+            
+            # Ejecutar la interfaz de calibración
+            ruta_interfaz = os.path.join(os.path.dirname(__file__), "interfaz_calibracion.py")
+            
+            # Crear una nueva ventana de tkinter para la interfaz de calibración
+            ventana_calibracion = tk.Toplevel(self.root)
+            
+            # Importar y ejecutar la interfaz de calibración
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("interfaz_calibracion", ruta_interfaz)
+            modulo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modulo)
+            
+            # Crear instancia de la interfaz de calibración
+            app_calibracion = modulo.InterfazCalibracion(ventana_calibracion)
+            
+            # Cuando se cierre la ventana de calibración, mostrar la principal nuevamente
+            def al_cerrar_calibracion():
+                ventana_calibracion.destroy()
+                self.root.deiconify()  # Mostrar ventana principal
+                self.root.lift()  # Traer al frente
+                self.root.focus_force()  # Forzar el foco
+            
+            ventana_calibracion.protocol("WM_DELETE_WINDOW", al_cerrar_calibracion)
+            
+            # Esperar a que se cierre la ventana de calibración
+            self.root.wait_window(ventana_calibracion)
+            
+            # Asegurar que la ventana principal esté visible después
+            self.root.deiconify()
+            self.root.lift()
+            self.root.focus_force()
+            
+        except Exception as e:
+            self.root.deiconify()  # Asegurar que la ventana principal se muestre
+            self.root.lift()
+            messagebox.showerror("❌ Error", 
+                               f"No se pudo abrir la calibración de dispositivos:\n{str(e)}")
     
     def run(self):
         """Inicia el loop principal de la aplicación"""

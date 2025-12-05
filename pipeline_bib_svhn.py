@@ -18,10 +18,44 @@ import argparse
 import time
 from datetime import datetime
 import pandas as pd
+import json
 from gestor_participantes import GestorParticipantes
+
+# Archivo de configuración de calibración
+CONFIG_CALIBRACION_PATH = Path(__file__).parent / "config_calibracion.json"
+
+
+def cargar_config_calibracion():
+    """Carga la configuración desde el archivo JSON de calibración."""
+    defaults = {
+        "camara_index": 0,
+        "resolucion": "1280x720",
+        "conf_rbnr": 0.3,
+        "conf_svhn": 0.25,
+        "conf_svhn_min_digit": 0.80,
+        "conf_svhn_avg_min": 0.90,
+        "min_digits_count": 3,
+        "max_digits_count": 4,
+        "debounce_seconds": 2.0
+    }
+    if CONFIG_CALIBRACION_PATH.exists():
+        try:
+            with open(CONFIG_CALIBRACION_PATH, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                # Merge con defaults (por si faltan claves)
+                for key, value in defaults.items():
+                    if key not in config:
+                        config[key] = value
+                return config
+        except Exception as e:
+            print(f"[WARN] Error cargando config_calibracion.json: {e}")
+    return defaults
 
 
 class Config:
+    # Cargar configuración desde archivo JSON
+    _calibracion = cargar_config_calibracion()
+    
     # Modelos
     RBNR_CFG = "weights-classes/RBNR_custom-yolov4-tiny-detector.cfg"
     RBNR_WEIGHTS = "weights-classes/RBNR_custom-yolov4-tiny-detector_best.weights"
@@ -35,31 +69,52 @@ class Config:
     INPUT_SIZE_RBNR = 416
     INPUT_SIZE_SVHN = 416
 
-    # Umbrales por defecto
-    CONF_RBNR = 0.3
-    CONF_SVHN = 0.25
+    # Umbrales (desde calibración o defaults)
+    CONF_RBNR = _calibracion.get("conf_rbnr", 0.3)
+    CONF_SVHN = _calibracion.get("conf_svhn", 0.25)
     NMS_THRESHOLD = 0.4
 
     # Parámetros para filtrado y aceptación de números
     # Confianza mínima por dígito (0..1) para considerarlo en el agrupamiento
-    CONF_SVHN_MIN_DIGIT = 0.80
+    CONF_SVHN_MIN_DIGIT = _calibracion.get("conf_svhn_min_digit", 0.80)
     # Confianza promedio mínima del cluster aceptado
-    CONF_SVHN_AVG_MIN = 0.90
+    CONF_SVHN_AVG_MIN = _calibracion.get("conf_svhn_avg_min", 0.90)
     # Proporción mínima del ancho del bib que debe cubrir el cluster de dígitos
     MIN_DIGITS_WIDTH_RATIO = 0.30
     # Proporción mínima de solapamiento vertical entre cluster de dígitos y el bib
     MIN_VERTICAL_OVERLAP_RATIO = 0.6
     # Número mínimo de dígitos que debe tener el dorsal para ser considerado válido
-    MIN_DIGITS_COUNT = 3
+    MIN_DIGITS_COUNT = _calibracion.get("min_digits_count", 3)
     # Número máximo de dígitos (para filtrar ruido)
-    MAX_DIGITS_COUNT = 4
+    MAX_DIGITS_COUNT = _calibracion.get("max_digits_count", 4)
     
     # Debounce: no registrar el mismo dorsal más de una vez en este número de segundos
-    DEBOUNCE_SECONDS = 15
+    # NOTA: Dorsales DIFERENTES se detectan inmediatamente sin espera
+    DEBOUNCE_SECONDS = _calibracion.get("debounce_seconds", 2.0)
+    
+    # Configuración de cámara
+    CAMARA_INDEX = _calibracion.get("camara_index", 0)
+    RESOLUCION = _calibracion.get("resolucion", "1280x720")
 
     # Colores
     COLOR_BIB = (0, 255, 0)
     COLOR_DIGIT = (0, 165, 255)
+    
+    @classmethod
+    def recargar(cls):
+        """Recarga la configuración desde el archivo JSON."""
+        cls._calibracion = cargar_config_calibracion()
+        cls.CONF_RBNR = cls._calibracion.get("conf_rbnr", 0.3)
+        cls.CONF_SVHN = cls._calibracion.get("conf_svhn", 0.25)
+        cls.CONF_SVHN_MIN_DIGIT = cls._calibracion.get("conf_svhn_min_digit", 0.80)
+        cls.CONF_SVHN_AVG_MIN = cls._calibracion.get("conf_svhn_avg_min", 0.90)
+        cls.MIN_DIGITS_COUNT = cls._calibracion.get("min_digits_count", 3)
+        cls.MAX_DIGITS_COUNT = cls._calibracion.get("max_digits_count", 4)
+        cls.DEBOUNCE_SECONDS = cls._calibracion.get("debounce_seconds", 2.0)
+        cls.CAMARA_INDEX = cls._calibracion.get("camara_index", 0)
+        cls.RESOLUCION = cls._calibracion.get("resolucion", "1280x720")
+        print(f"[INFO] Configuración recargada: debounce={cls.DEBOUNCE_SECONDS}s, "
+              f"conf_rbnr={cls.CONF_RBNR}, conf_svhn={cls.CONF_SVHN}")
 
 
 def _load_net(cfg_path, weights_path):
@@ -454,14 +509,26 @@ def main():
     else:
         # Modo cámara: capturar frames y procesar en tiempo real
         print('Iniciando modo cámara. Presiona q o ESC para salir, c para capturar, espacio para pausar/reanudar.')
-        cap = cv2.VideoCapture(0)
+        
+        # Usar configuración de calibración
+        camara_index = Config.CAMARA_INDEX
+        resolucion = Config.RESOLUCION
+        try:
+            res_w, res_h = map(int, resolucion.split('x'))
+        except:
+            res_w, res_h = 1280, 720
+        
+        print(f'[INFO] Usando cámara {camara_index} a {res_w}x{res_h}')
+        print(f'[INFO] Debounce: {Config.DEBOUNCE_SECONDS}s (mismo dorsal), dorsales diferentes: inmediato')
+        
+        cap = cv2.VideoCapture(camara_index)
         if not cap.isOpened():
-            print('[X] No se pudo abrir la cámara')
+            print(f'[X] No se pudo abrir la cámara {camara_index}')
             return
 
-        # configurar resolución si se desea
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        # configurar resolución desde calibración
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, res_w)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res_h)
 
         pausado = False
         output_dir = Path('output')

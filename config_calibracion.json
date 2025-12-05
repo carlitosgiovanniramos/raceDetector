@@ -1,0 +1,11 @@
+{
+    "camara_index": 0,
+    "resolucion": "1920x1080",
+    "conf_rbnr": 0.3,
+    "conf_svhn": 0.25,
+    "conf_svhn_min_digit": 0.8,
+    "conf_svhn_avg_min": 0.9,
+    "min_digits_count": 3,
+    "max_digits_count": 4,
+    "debounce_seconds": 0.5
+}
