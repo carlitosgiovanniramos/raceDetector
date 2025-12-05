@@ -254,14 +254,53 @@ class InterfazPrincipal:
             self.cambiar_color_recursivo(child, color)
     
     def iniciar_cronometraje(self, event=None):
-        """Función para iniciar el cronometraje (en desarrollo)"""
-        messagebox.showinfo("🏁 Cronometraje", 
-                          "Esta funcionalidad está en desarrollo.\n\n"
-                          "Próximamente podrás:\n"
-                          "• Iniciar cronometraje en tiempo real\n"
-                          "• Detectar dorsales automáticamente\n"
-                          "• Registrar tiempos de llegada\n"
-                          "• Generar reportes de resultados")
+        """Abre la interfaz de detección en vivo"""
+        try:
+            # Ocultar ventana principal temporalmente
+            self.root.withdraw()
+            
+            # Ejecutar la interfaz de detección
+            ruta_interfaz = os.path.join(os.path.dirname(__file__), "interfaz_deteccion.py")
+            
+            # Crear una nueva ventana de tkinter para la interfaz de detección
+            ventana_deteccion = tk.Toplevel(self.root)
+            
+            # Importar y ejecutar la interfaz de detección
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("interfaz_deteccion", ruta_interfaz)
+            modulo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modulo)
+            
+            # Crear instancia de la interfaz de detección
+            app_deteccion = modulo.InterfazDeteccion(ventana_deteccion, modo_independiente=False)
+            
+            # Cuando se cierre la ventana de detección, mostrar la principal nuevamente
+            def al_cerrar_deteccion():
+                # Detener la cámara si está activa
+                if hasattr(app_deteccion, 'captura_activa') and app_deteccion.captura_activa:
+                    app_deteccion.captura_activa = False
+                    if app_deteccion.cap:
+                        app_deteccion.cap.release()
+                ventana_deteccion.destroy()
+                self.root.deiconify()  # Mostrar ventana principal
+                self.root.lift()  # Traer al frente
+                self.root.focus_force()  # Forzar el foco
+            
+            ventana_deteccion.protocol("WM_DELETE_WINDOW", al_cerrar_deteccion)
+            
+            # Esperar a que se cierre la ventana de detección
+            self.root.wait_window(ventana_deteccion)
+            
+            # Asegurar que la ventana principal esté visible después
+            self.root.deiconify()
+            self.root.lift()
+            self.root.focus_force()
+            
+        except Exception as e:
+            self.root.deiconify()  # Asegurar que la ventana principal se muestre
+            self.root.lift()
+            messagebox.showerror("❌ Error", 
+                               f"No se pudo abrir la detección en vivo:\n{str(e)}")
     
     def abrir_gestion_participantes(self):
         """Abre la interfaz de gestión de participantes"""

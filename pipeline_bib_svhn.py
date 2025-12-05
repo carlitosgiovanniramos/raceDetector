@@ -201,18 +201,39 @@ def clamp(x, a, b):
 # Cache de registros recientes para debounce: dorsal_str -> timestamp (seconds)
 recent_registrations = {}
 
+# Set de dorsales ya registrados en esta sesión (evita duplicados)
+dorsales_registrados_sesion = set()
+
 
 def should_register(dorsal_str: str) -> bool:
-    """Devuelve True si el dorsal puede registrarse (no se registró en los últimos DEBOUNCE_SECONDS)."""
+    """Devuelve True si el dorsal puede registrarse.
+    
+    Un dorsal solo se registra UNA VEZ por sesión/carrera.
+    El debounce solo evita detecciones rápidas del mismo frame.
+    """
+    # PRIMERO: Verificar si ya fue registrado en esta sesión
+    if dorsal_str in dorsales_registrados_sesion:
+        return False
+    
+    # SEGUNDO: Debounce temporal para evitar múltiples detecciones rápidas
     now_ts = time.time()
     last = recent_registrations.get(dorsal_str)
     if last is None:
         recent_registrations[dorsal_str] = now_ts
+        dorsales_registrados_sesion.add(dorsal_str)
         return True
     if now_ts - last >= Config.DEBOUNCE_SECONDS:
         recent_registrations[dorsal_str] = now_ts
+        dorsales_registrados_sesion.add(dorsal_str)
         return True
     return False
+
+
+def reset_registros():
+    """Reinicia los registros para una nueva carrera/sesión."""
+    global recent_registrations, dorsales_registrados_sesion
+    recent_registrations = {}
+    dorsales_registrados_sesion = set()
 
 
 def process_image(image_path, net_bib, layers_bib, names_bib, net_svhn, layers_svhn, names_svhn, conf_bib, conf_svhn, show_window=True):
