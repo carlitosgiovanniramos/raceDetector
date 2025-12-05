@@ -15,10 +15,10 @@ class InterfazPrincipal:
     def __init__(self, root):
         self.root = root
         self.root.title("🏁 Race Detector - Sistema de Cronometraje")
-        self.root.geometry("1000x700")
+        self.root.geometry("950x680")
         self.root.configure(bg="#2b2d30")
         self.root.resizable(True, True)
-        self.root.minsize(900, 650)
+        self.root.minsize(850, 620)
         
         # Variables para animaciones y estados
         self.animacion_activa = False
@@ -41,184 +41,164 @@ class InterfazPrincipal:
     def crear_widgets(self):
         """Crea todos los widgets de la interfaz moderna con colores sobrios"""
         
-        # ===== HEADER: DISEÑO SOBRIO Y ELEGANTE =====
-        frame_header = tk.Frame(self.root, bg="#1e1f22", height=90)
-        frame_header.pack(fill=tk.X, padx=0, pady=0)
+        # ===== HEADER =====
+        frame_header = tk.Frame(self.root, bg="#1e1f22", height=100)
+        frame_header.pack(fill=tk.X)
         frame_header.pack_propagate(False)
         
-        # Contenedor del título con mejor espaciado
         header_content = tk.Frame(frame_header, bg="#1e1f22")
         header_content.pack(expand=True)
         
-        # Título principal sobrio
-        tk.Label(header_content, text="⏱️ Race Detector", 
-                font=('Segoe UI', 36, 'bold'), 
-                bg="#1e1f22", fg="#e8e8e8",
-                pady=3).pack()
+        # Logo y título
+        tk.Label(header_content, text="⏱️  Race Detector", 
+                font=('Segoe UI', 32, 'bold'), 
+                bg="#1e1f22", fg="#e8e8e8").pack(pady=(20, 5))
         
         tk.Label(header_content, text="Sistema de Cronometraje Profesional", 
-                font=('Segoe UI', 10), 
+                font=('Segoe UI', 11), 
                 bg="#1e1f22", fg="#9ca3af").pack()
         
-        # ===== SECCIÓN CENTRAL: BOTÓN PRINCIPAL SOBRIO =====
-        frame_central = tk.Frame(self.root, bg="#2b2d30")
-        frame_central.pack(fill=tk.BOTH, expand=True, padx=60, pady=25)
+        # ===== CONTENIDO PRINCIPAL =====
+        frame_contenido = tk.Frame(self.root, bg="#2b2d30")
+        frame_contenido.pack(fill=tk.BOTH, expand=True, padx=50, pady=30)
         
-        # Tarjeta con diseño sobrio
-        card_principal = tk.Frame(frame_central, bg="#3c3f41", relief=tk.FLAT, bd=0,
-                                 highlightbackground="#4c5052", highlightthickness=1)
-        card_principal.pack(expand=True)
+        # Centrar contenido verticalmente
+        frame_contenido.grid_rowconfigure(0, weight=1)
+        frame_contenido.grid_rowconfigure(1, weight=0)
+        frame_contenido.grid_rowconfigure(2, weight=1)
+        frame_contenido.grid_columnconfigure(0, weight=1)
+        
+        # ===== BOTÓN PRINCIPAL DE INICIO =====
+        frame_boton_central = tk.Frame(frame_contenido, bg="#2b2d30")
+        frame_boton_central.grid(row=0, column=0, sticky="s", pady=(0, 20))
+        
+        # Tarjeta del botón principal
+        card_principal = tk.Frame(frame_boton_central, bg="#3c3f41", 
+                                 highlightbackground="#5a9fd4", highlightthickness=2)
+        card_principal.pack()
         
         # Canvas para el botón de play
-        canvas_size = 160
+        canvas_size = 140
         self.canvas = tk.Canvas(card_principal, 
                                width=canvas_size, 
                                height=canvas_size,
                                bg="#3c3f41", 
-                               highlightthickness=0)
-        self.canvas.pack(padx=60, pady=(35, 18))
+                               highlightthickness=0,
+                               cursor="hand2")
+        self.canvas.pack(padx=50, pady=(30, 15))
         
-        # Círculo exterior con diseño minimalista
-        self.circulo_exterior = self.canvas.create_oval(15, 15, 145, 145, 
+        # Círculo exterior
+        self.circulo_exterior = self.canvas.create_oval(10, 10, 130, 130, 
                                                         fill="#5a9fd4", 
                                                         outline="#6ba8dc", 
                                                         width=3)
         
         # Círculo interior
-        self.circulo_interior = self.canvas.create_oval(28, 28, 132, 132, 
+        self.circulo_interior = self.canvas.create_oval(22, 22, 118, 118, 
                                                         fill="#3c3f41", 
-                                                        outline="", 
-                                                        width=0)
+                                                        outline="")
         
-        # Triángulo de play
+        # Triángulo de play (centrado correctamente)
+        cx, cy = 70, 70  # Centro del canvas
         self.triangulo = self.canvas.create_polygon(
-            62, 50,   # Punto superior
-            62, 110,  # Punto inferior
-            110, 80,  # Punto derecho
+            cx - 15, cy - 25,   # Punto superior izquierdo
+            cx - 15, cy + 25,   # Punto inferior izquierdo
+            cx + 25, cy,        # Punto derecho
             fill="#5a9fd4",
-            outline="",
-            width=0
-        )
+            outline="")
         
-        # Textos con diseño sobrio
+        # Textos
         tk.Label(card_principal, 
                 text="INICIAR CRONOMETRAJE", 
-                font=('Segoe UI', 15, 'bold'),
-                bg="#3c3f41", 
-                fg="#e8e8e8").pack(pady=(0, 4))
+                font=('Segoe UI', 14, 'bold'),
+                bg="#3c3f41", fg="#e8e8e8").pack(pady=(0, 5))
         
         tk.Label(card_principal, 
-                text="Haz clic para comenzar", 
+                text="Clic para comenzar la detección en vivo", 
                 font=('Segoe UI', 9),
-                bg="#3c3f41", 
-                fg="#9ca3af").pack(pady=(0, 25))
+                bg="#3c3f41", fg="#9ca3af").pack(pady=(0, 25))
         
         # Eventos del botón principal
         self.canvas.bind("<Enter>", self.on_hover_principal)
         self.canvas.bind("<Leave>", self.on_leave_principal)
         self.canvas.bind("<Button-1>", self.iniciar_cronometraje)
+        card_principal.bind("<Enter>", self.on_hover_principal)
+        card_principal.bind("<Leave>", self.on_leave_principal)
+        card_principal.bind("<Button-1>", self.iniciar_cronometraje)
         
-        # ===== SECCIÓN INFERIOR: TARJETAS SOBRIAS =====
-        frame_inferior = tk.Frame(self.root, bg="#2b2d30")
-        frame_inferior.pack(fill=tk.X, padx=60, pady=(0, 25))
+        # ===== SECCIÓN DE TARJETAS =====
+        frame_tarjetas = tk.Frame(frame_contenido, bg="#2b2d30")
+        frame_tarjetas.grid(row=1, column=0, sticky="n", pady=(10, 0))
         
-        # Título de la sección
-        titulo_seccion = tk.Frame(frame_inferior, bg="#2b2d30")
-        titulo_seccion.pack(pady=(0, 18))
+        # Título de sección
+        tk.Label(frame_tarjetas, 
+                text="— Panel de Configuración —", 
+                font=('Segoe UI', 11),
+                bg="#2b2d30", fg="#6c727a").pack(pady=(0, 20))
         
-        tk.Label(titulo_seccion, 
-                text="Panel de Configuración", 
-                font=('Segoe UI', 12, 'bold'),
-                bg="#2b2d30", 
-                fg="#9ca3af").pack()
-        
-        # Contenedor responsivo para las tarjetas
-        frame_cards = tk.Frame(frame_inferior, bg="#2b2d30")
-        frame_cards.pack(expand=True)
-        
-        # Grid configuration para responsividad mejorada
-        frame_cards.grid_columnconfigure(0, weight=1, minsize=260)
-        frame_cards.grid_columnconfigure(1, weight=0, minsize=25)
-        frame_cards.grid_columnconfigure(2, weight=1, minsize=260)
+        # Contenedor de tarjetas
+        frame_cards = tk.Frame(frame_tarjetas, bg="#2b2d30")
+        frame_cards.pack()
         
         # ===== TARJETA 1: GESTIONAR PARTICIPANTES =====
-        self.card_participantes = tk.Frame(frame_cards, bg="#3c3f41", 
-                                          relief=tk.FLAT, bd=0, cursor="hand2",
-                                          highlightbackground="#4c5052", 
-                                          highlightthickness=1)
-        self.card_participantes.grid(row=0, column=0, sticky="ew", padx=8)
+        self.card_participantes = tk.Frame(frame_cards, bg="#3c3f41", cursor="hand2",
+                                          highlightbackground="#4c5052", highlightthickness=1,
+                                          width=280, height=150)
+        self.card_participantes.pack(side=tk.LEFT, padx=15)
+        self.card_participantes.pack_propagate(False)
         
-        # Contenido de la tarjeta
         content_part = tk.Frame(self.card_participantes, bg="#3c3f41")
-        content_part.pack(fill=tk.BOTH, expand=True, padx=22, pady=22)
+        content_part.pack(expand=True)
         
-        # Icono
         tk.Label(content_part, text="👥", 
-                font=('Segoe UI', 36), bg="#3c3f41", fg="#6ba8dc").pack(pady=(0, 8))
+                font=('Segoe UI', 32), bg="#3c3f41", fg="#6ba8dc").pack(pady=(10, 5))
         
-        # Título
         tk.Label(content_part, text="Gestionar Participantes", 
-                font=('Segoe UI', 13, 'bold'), bg="#3c3f41", fg="#e8e8e8").pack(pady=(0, 6))
+                font=('Segoe UI', 12, 'bold'), bg="#3c3f41", fg="#e8e8e8").pack(pady=(0, 5))
         
-        # Descripción
-        tk.Label(content_part, text="Administra la base de datos\nde corredores y dorsales", 
-                font=('Segoe UI', 9), bg="#3c3f41", fg="#9ca3af",
-                justify=tk.CENTER).pack()
+        tk.Label(content_part, text="Administra corredores y dorsales", 
+                font=('Segoe UI', 9), bg="#3c3f41", fg="#9ca3af").pack()
         
-        # Eventos de la tarjeta de participantes
-        self.card_participantes.bind("<Enter>", lambda e: self.on_hover_card(self.card_participantes, "#484b4d"))
-        self.card_participantes.bind("<Leave>", lambda e: self.on_leave_card(self.card_participantes, "#3c3f41"))
-        self.card_participantes.bind("<Button-1>", lambda e: self.abrir_gestion_participantes())
-        
-        # Hacer que todos los widgets internos también respondan al click
-        for widget in content_part.winfo_children():
+        # Eventos
+        for widget in [self.card_participantes, content_part] + content_part.winfo_children():
+            widget.bind("<Enter>", lambda e: self.on_hover_card(self.card_participantes, "#484b4d"))
+            widget.bind("<Leave>", lambda e: self.on_leave_card(self.card_participantes, "#3c3f41"))
             widget.bind("<Button-1>", lambda e: self.abrir_gestion_participantes())
-        content_part.bind("<Button-1>", lambda e: self.abrir_gestion_participantes())
         
         # ===== TARJETA 2: CALIBRAR DISPOSITIVOS =====
-        self.card_calibrar = tk.Frame(frame_cards, bg="#3c3f41", 
-                                     relief=tk.FLAT, bd=0, cursor="hand2",
-                                     highlightbackground="#4c5052", 
-                                     highlightthickness=1)
-        self.card_calibrar.grid(row=0, column=2, sticky="ew", padx=8)
+        self.card_calibrar = tk.Frame(frame_cards, bg="#3c3f41", cursor="hand2",
+                                     highlightbackground="#4c5052", highlightthickness=1,
+                                     width=280, height=150)
+        self.card_calibrar.pack(side=tk.LEFT, padx=15)
+        self.card_calibrar.pack_propagate(False)
         
-        # Contenido de la tarjeta
         content_calib = tk.Frame(self.card_calibrar, bg="#3c3f41")
-        content_calib.pack(fill=tk.BOTH, expand=True, padx=22, pady=22)
+        content_calib.pack(expand=True)
         
-        # Icono
         tk.Label(content_calib, text="⚙️", 
-                font=('Segoe UI', 36), bg="#3c3f41", fg="#d4a373").pack(pady=(0, 8))
+                font=('Segoe UI', 32), bg="#3c3f41", fg="#d4a373").pack(pady=(10, 5))
         
-        # Título
         tk.Label(content_calib, text="Calibrar Dispositivos", 
-                font=('Segoe UI', 13, 'bold'), bg="#3c3f41", fg="#e8e8e8").pack(pady=(0, 6))
+                font=('Segoe UI', 12, 'bold'), bg="#3c3f41", fg="#e8e8e8").pack(pady=(0, 5))
         
-        # Descripción
-        tk.Label(content_calib, text="Configura cámaras\ny sensores del sistema", 
-                font=('Segoe UI', 9), bg="#3c3f41", fg="#9ca3af",
-                justify=tk.CENTER).pack()
+        tk.Label(content_calib, text="Configura cámaras y sensores", 
+                font=('Segoe UI', 9), bg="#3c3f41", fg="#9ca3af").pack()
         
-        # Eventos de la tarjeta de calibración
-        self.card_calibrar.bind("<Enter>", lambda e: self.on_hover_card(self.card_calibrar, "#484b4d"))
-        self.card_calibrar.bind("<Leave>", lambda e: self.on_leave_card(self.card_calibrar, "#3c3f41"))
-        self.card_calibrar.bind("<Button-1>", lambda e: self.calibrar_dispositivos())
-        
-        # Hacer que todos los widgets internos también respondan al click
-        for widget in content_calib.winfo_children():
+        # Eventos
+        for widget in [self.card_calibrar, content_calib] + content_calib.winfo_children():
+            widget.bind("<Enter>", lambda e: self.on_hover_card(self.card_calibrar, "#484b4d"))
+            widget.bind("<Leave>", lambda e: self.on_leave_card(self.card_calibrar, "#3c3f41"))
             widget.bind("<Button-1>", lambda e: self.calibrar_dispositivos())
-        content_calib.bind("<Button-1>", lambda e: self.calibrar_dispositivos())
         
-        # ===== FOOTER: DISEÑO SOBRIO =====
+        # ===== FOOTER =====
         frame_footer = tk.Frame(self.root, bg="#1e1f22", height=40)
         frame_footer.pack(fill=tk.X, side=tk.BOTTOM)
         frame_footer.pack_propagate(False)
         
         tk.Label(frame_footer, 
-                text="© 2025 Race Detector • v1.0 • Sistema Profesional de Cronometraje", 
-                font=('Segoe UI', 8),
-                bg="#1e1f22", 
-                fg="#6c727a").pack(pady=11)
+                text="© 2025 Race Detector  •  v1.0  •  Sistema Profesional de Cronometraje", 
+                font=('Segoe UI', 9),
+                bg="#1e1f22", fg="#6c727a").pack(expand=True)
     
     def on_hover_principal(self, event):
         """Efecto hover sobrio en el botón principal"""
