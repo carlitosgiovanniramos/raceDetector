@@ -12,7 +12,8 @@ Integra el pipeline de detección con una interfaz gráfica completa que incluye
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+import tkinter.ttk as ttk
+import tkinter.messagebox as messagebox
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -22,6 +23,17 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import json
 import pandas as pd
+import sys
+import os
+
+def obtener_ruta_base():
+    """Obtiene la ruta base correcta tanto para desarrollo como para PyInstaller"""
+    if getattr(sys, 'frozen', False):
+        # Ejecutando como .exe (PyInstaller)
+        return sys._MEIPASS
+    else:
+        # Ejecutando como script Python
+        return os.path.dirname(os.path.abspath(__file__))
 
 # Importar componentes del pipeline
 from gestor_participantes import GestorParticipantes
@@ -29,7 +41,7 @@ from gestor_participantes import GestorParticipantes
 
 class Config:
     """Configuración cargada desde config_calibracion.json"""
-    CONFIG_FILE = Path(__file__).parent / "config_calibracion.json"
+    CONFIG_FILE = Path(obtener_ruta_base()) / "config_calibracion.json"
     
     DEFAULTS = {
         "camara_index": 0,
@@ -71,13 +83,16 @@ class DetectorDorsales:
         self.names_svhn = []
         self.cargado = False
         
+        # Obtener ruta base (funciona con PyInstaller y desarrollo)
+        base_path = obtener_ruta_base()
+        
         # Rutas de modelos
-        self.RBNR_CFG = "weights-classes/RBNR_custom-yolov4-tiny-detector.cfg"
-        self.RBNR_WEIGHTS = "weights-classes/RBNR_custom-yolov4-tiny-detector_best.weights"
-        self.RBNR_NAMES = "weights-classes/RBRN_obj.names"
-        self.SVHN_CFG = "weights-classes/SVHN_custom-yolov4-tiny-detector.cfg"
-        self.SVHN_WEIGHTS = "weights-classes/SVHN_custom-yolov4-tiny-detector_best.weights"
-        self.SVHN_NAMES = "weights-classes/SVHN_obj.names"
+        self.RBNR_CFG = os.path.join(base_path, "weights-classes/RBNR_custom-yolov4-tiny-detector.cfg")
+        self.RBNR_WEIGHTS = os.path.join(base_path, "weights-classes/RBNR_custom-yolov4-tiny-detector_best.weights")
+        self.RBNR_NAMES = os.path.join(base_path, "weights-classes/RBRN_obj.names")
+        self.SVHN_CFG = os.path.join(base_path, "weights-classes/SVHN_custom-yolov4-tiny-detector.cfg")
+        self.SVHN_WEIGHTS = os.path.join(base_path, "weights-classes/SVHN_custom-yolov4-tiny-detector_best.weights")
+        self.SVHN_NAMES = os.path.join(base_path, "weights-classes/SVHN_obj.names")
         
         # Parámetros
         self.INPUT_SIZE = 416

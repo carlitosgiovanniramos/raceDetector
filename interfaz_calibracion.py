@@ -6,20 +6,32 @@ Fecha: Diciembre 2025
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+import tkinter.ttk as ttk
+import tkinter.messagebox as messagebox
 import cv2
 import json
 import os
+import sys
 from pathlib import Path
 from PIL import Image, ImageTk
 import threading
 
 
+def obtener_ruta_base():
+    """Obtiene la ruta base correcta tanto en desarrollo como en .exe PyInstaller."""
+    if getattr(sys, 'frozen', False):
+        # Ejecutando como .exe empaquetado
+        return sys._MEIPASS
+    else:
+        # Ejecutando como script Python normal
+        return os.path.dirname(os.path.abspath(__file__))
+
+
 class InterfazCalibracion:
     """Interfaz para calibrar cámaras y ajustar parámetros de detección"""
     
-    # Archivo de configuración
-    CONFIG_FILE = "config_calibracion.json"
+    # Archivo de configuración (ruta absoluta)
+    CONFIG_FILE = os.path.join(obtener_ruta_base(), "config_calibracion.json")
     
     # Valores por defecto
     DEFAULTS = {
@@ -113,7 +125,7 @@ class InterfazCalibracion:
         """Detecta las cámaras disponibles en el sistema"""
         self.camaras_disponibles = []
         for i in range(5):  # Probar índices 0-4
-            cap = cv2.VideoCapture(i)
+            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
             if cap.isOpened():
                 self.camaras_disponibles.append(i)
                 cap.release()
