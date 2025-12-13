@@ -788,6 +788,7 @@ class InterfazDeteccion:
             "Nombre": participante.get("nombre", "") if participante else "",
             "Apellido": participante.get("apellido", "") if participante else "",
             "Categoría": participante.get("categoria", "") if participante else "",
+            "Distancia": participante.get("distancia", "") if participante else "",
             "HoraLlegada": tiempo,
             "Estado": "Registrado" if participante else "No encontrado"
         }
