@@ -376,6 +376,12 @@ class InterfazDeteccion:
                                             bg="#3c3f41", fg="#e8e8e8")
         self.label_nombre_grande.pack(pady=10)
         
+        # Categoría
+        self.label_categoria = tk.Label(self.frame_corredor, text="", 
+                                        font=('Segoe UI', 16, 'bold'),
+                                        bg="#3c3f41", fg="#d4a373")
+        self.label_categoria.pack(pady=5)
+        
         # Tiempo
         self.label_tiempo_corredor = tk.Label(self.frame_corredor, text="--:--:--", 
                                               font=('Consolas', 36, 'bold'),
@@ -781,6 +787,7 @@ class InterfazDeteccion:
             "Dorsal": dorsal,
             "Nombre": participante.get("nombre", "") if participante else "",
             "Apellido": participante.get("apellido", "") if participante else "",
+            "Categoría": participante.get("categoria", "") if participante else "",
             "HoraLlegada": tiempo,
             "Estado": "Registrado" if participante else "No encontrado"
         }
@@ -805,12 +812,21 @@ class InterfazDeteccion:
             if self.ultimo_participante:
                 nombre = f"{self.ultimo_participante.get('nombre', '')} {self.ultimo_participante.get('apellido', '')}"
                 self.label_nombre_grande.config(text=nombre, fg="#5a9fd4")
+                
+                # Mostrar categoría
+                categoria = self.ultimo_participante.get('categoria', '')
+                if categoria:
+                    self.label_categoria.config(text=f"Categoría: {categoria}", fg="#d4a373")
+                else:
+                    self.label_categoria.config(text="")
+                
                 self.label_estado_registro.config(text="✅ REGISTRADO", fg="#28a745")
                 self.frame_corredor.config(bg="#2a4a3a")  # Verde oscuro sobrio
                 for widget in self.frame_corredor.winfo_children():
                     widget.config(bg="#2a4a3a")
             else:
                 self.label_nombre_grande.config(text="Participante no encontrado", fg="#d4a373")
+                self.label_categoria.config(text="")
                 self.label_estado_registro.config(text="⚠️ NO EN BASE DE DATOS", fg="#d4a373")
                 self.frame_corredor.config(bg="#4a3a2a")  # Naranja oscuro sobrio
                 for widget in self.frame_corredor.winfo_children():

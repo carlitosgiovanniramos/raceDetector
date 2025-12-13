@@ -17,8 +17,8 @@ class GestorParticipantes:
     def __init__(self, archivo_excel="participantes.xlsx"):
         self.archivo = archivo_excel
         self.columnas = [
-            "Cédula", "Nombre", "Apellido", "Dirección", 
-            "Contacto", "Estado Pago", "Número Dorsal"
+            "Cédula", "Nombre", "Apellido", "Edad", "Distancia",
+            "Correo Electrónico", "Contacto", "Categoría", "Número Dorsal", "Estado Pago"
         ]
         self._inicializar_archivo()
     
@@ -73,15 +73,15 @@ class GestorParticipantes:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             
             # Ajustar anchos de columna
-            anchos = [15, 20, 20, 30, 15, 15, 15]
+            anchos = [15, 20, 20, 10, 15, 30, 15, 15, 15, 15]
             for col_num, ancho in enumerate(anchos, 1):
                 ws.column_dimensions[openpyxl.utils.get_column_letter(col_num)].width = ancho
             
             wb.save(self.archivo)
             print(f"✅ Archivo '{self.archivo}' creado exitosamente")
     
-    def agregar_participante(self, cedula, nombre, apellido, direccion, contacto, 
-                            estado_pago="PENDIENTE", numero_dorsal=""):
+    def agregar_participante(self, cedula, nombre, apellido, edad, distancia, correo, 
+                            contacto, categoria, numero_dorsal="", estado_pago="PENDIENTE"):
         """
         Agrega un nuevo participante al archivo Excel
         
@@ -124,13 +124,16 @@ class GestorParticipantes:
             ws.cell(row=siguiente_fila, column=1).value = str(cedula)
             ws.cell(row=siguiente_fila, column=2).value = nombre
             ws.cell(row=siguiente_fila, column=3).value = apellido
-            ws.cell(row=siguiente_fila, column=4).value = direccion
-            ws.cell(row=siguiente_fila, column=5).value = contacto
-            ws.cell(row=siguiente_fila, column=6).value = estado_pago
-            ws.cell(row=siguiente_fila, column=7).value = str(numero_dorsal) if numero_dorsal else ""
+            ws.cell(row=siguiente_fila, column=4).value = str(edad)
+            ws.cell(row=siguiente_fila, column=5).value = distancia
+            ws.cell(row=siguiente_fila, column=6).value = correo
+            ws.cell(row=siguiente_fila, column=7).value = contacto
+            ws.cell(row=siguiente_fila, column=8).value = categoria
+            ws.cell(row=siguiente_fila, column=9).value = str(numero_dorsal) if numero_dorsal else ""
+            ws.cell(row=siguiente_fila, column=10).value = estado_pago
             
             # Aplicar estilo a la fila de estado de pago
-            cell_pago = ws.cell(row=siguiente_fila, column=6)
+            cell_pago = ws.cell(row=siguiente_fila, column=10)
             if estado_pago == "PAGADO":
                 cell_pago.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
                 cell_pago.font = Font(color="006100", bold=True)
@@ -167,7 +170,7 @@ class GestorParticipantes:
             for fila in range(2, ws.max_row + 1):
                 if str(ws.cell(row=fila, column=1).value) == str(cedula):
                     # Leer el dorsal y formatearlo automáticamente
-                    dorsal_raw = ws.cell(row=fila, column=7).value
+                    dorsal_raw = ws.cell(row=fila, column=9).value
                     dorsal_formateado = self._formatear_dorsal(dorsal_raw) if dorsal_raw else ""
                     
                     return {
@@ -175,10 +178,13 @@ class GestorParticipantes:
                         "cedula": ws.cell(row=fila, column=1).value,
                         "nombre": ws.cell(row=fila, column=2).value,
                         "apellido": ws.cell(row=fila, column=3).value,
-                        "direccion": ws.cell(row=fila, column=4).value,
-                        "contacto": ws.cell(row=fila, column=5).value,
-                        "estado_pago": ws.cell(row=fila, column=6).value,
-                        "numero_dorsal": dorsal_formateado
+                        "edad": ws.cell(row=fila, column=4).value,
+                        "distancia": ws.cell(row=fila, column=5).value,
+                        "correo": ws.cell(row=fila, column=6).value,
+                        "contacto": ws.cell(row=fila, column=7).value,
+                        "categoria": ws.cell(row=fila, column=8).value,
+                        "numero_dorsal": dorsal_formateado,
+                        "estado_pago": ws.cell(row=fila, column=10).value
                     }
             return None
         except Exception as e:
@@ -200,7 +206,7 @@ class GestorParticipantes:
             ws = wb.active
             
             for fila in range(2, ws.max_row + 1):
-                dorsal_cell = ws.cell(row=fila, column=7).value
+                dorsal_cell = ws.cell(row=fila, column=9).value
                 # Formatear el dorsal leído del Excel
                 dorsal_formateado = self._formatear_dorsal(dorsal_cell) if dorsal_cell else ""
                 
@@ -210,10 +216,13 @@ class GestorParticipantes:
                         "cedula": ws.cell(row=fila, column=1).value,
                         "nombre": ws.cell(row=fila, column=2).value,
                         "apellido": ws.cell(row=fila, column=3).value,
-                        "direccion": ws.cell(row=fila, column=4).value,
-                        "contacto": ws.cell(row=fila, column=5).value,
-                        "estado_pago": ws.cell(row=fila, column=6).value,
-                        "numero_dorsal": dorsal_formateado
+                        "edad": ws.cell(row=fila, column=4).value,
+                        "distancia": ws.cell(row=fila, column=5).value,
+                        "correo": ws.cell(row=fila, column=6).value,
+                        "contacto": ws.cell(row=fila, column=7).value,
+                        "categoria": ws.cell(row=fila, column=8).value,
+                        "numero_dorsal": dorsal_formateado,
+                        "estado_pago": ws.cell(row=fila, column=10).value
                     }
             return None
         except Exception as e:
@@ -234,7 +243,7 @@ class GestorParticipantes:
             
             for fila in range(2, ws.max_row + 1):
                 # Leer el dorsal y formatearlo automáticamente
-                dorsal_raw = ws.cell(row=fila, column=7).value
+                dorsal_raw = ws.cell(row=fila, column=9).value
                 dorsal_formateado = self._formatear_dorsal(dorsal_raw) if dorsal_raw else ""
                 
                 participante = {
@@ -242,10 +251,13 @@ class GestorParticipantes:
                     "cedula": ws.cell(row=fila, column=1).value,
                     "nombre": ws.cell(row=fila, column=2).value,
                     "apellido": ws.cell(row=fila, column=3).value,
-                    "direccion": ws.cell(row=fila, column=4).value,
-                    "contacto": ws.cell(row=fila, column=5).value,
-                    "estado_pago": ws.cell(row=fila, column=6).value,
-                    "numero_dorsal": dorsal_formateado
+                    "edad": ws.cell(row=fila, column=4).value,
+                    "distancia": ws.cell(row=fila, column=5).value,
+                    "correo": ws.cell(row=fila, column=6).value,
+                    "contacto": ws.cell(row=fila, column=7).value,
+                    "categoria": ws.cell(row=fila, column=8).value,
+                    "numero_dorsal": dorsal_formateado,
+                    "estado_pago": ws.cell(row=fila, column=10).value
                 }
                 participantes.append(participante)
             
@@ -278,10 +290,13 @@ class GestorParticipantes:
             mapeo = {
                 "nombre": 2,
                 "apellido": 3,
-                "direccion": 4,
-                "contacto": 5,
-                "estado_pago": 6,
-                "numero_dorsal": 7
+                "edad": 4,
+                "distancia": 5,
+                "correo": 6,
+                "contacto": 7,
+                "categoria": 8,
+                "numero_dorsal": 9,
+                "estado_pago": 10
             }
             
             # Formatear el dorsal si se está actualizando

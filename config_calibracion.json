@@ -1,5 +1,5 @@
 {
-    "camara_index": 2,
+    "camara_index": 0,
     "resolucion": "1920x1080",
     "conf_rbnr": 0.3,
     "conf_svhn": 0.25,

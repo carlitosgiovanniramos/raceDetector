@@ -104,7 +104,7 @@ class InterfazParticipantes:
         scrollbar_x = tk.Scrollbar(frame_tree, orient=tk.HORIZONTAL)
         scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
         
-        columnas = ("Cédula", "Nombre", "Apellido", "Dirección", "Contacto", "Estado Pago", "Dorsal")
+        columnas = ("Cédula", "Nombre", "Apellido", "Edad", "Distancia", "Email", "Contacto", "Categoría", "Dorsal", "Estado Pago")
         self.tree = ttk.Treeview(frame_tree, columns=columnas, show='headings',
                                 yscrollcommand=scrollbar_y.set,
                                 xscrollcommand=scrollbar_x.set,
@@ -114,7 +114,7 @@ class InterfazParticipantes:
         scrollbar_x.config(command=self.tree.xview)
         
         # Configurar columnas
-        anchos = [100, 150, 150, 200, 120, 100, 80]
+        anchos = [100, 120, 120, 60, 80, 180, 100, 100, 70, 100]
         for col, ancho in zip(columnas, anchos):
             self.tree.heading(col, text=col, command=lambda c=col: self.ordenar_por_columna(c))
             self.tree.column(col, width=ancho, anchor=tk.CENTER if col in ["Estado Pago", "Dorsal"] else tk.W)
@@ -167,8 +167,11 @@ class InterfazParticipantes:
             ("Cédula:", "entry_cedula"),
             ("Nombre:", "entry_nombre"),
             ("Apellido:", "entry_apellido"),
-            ("Dirección:", "entry_direccion"),
-            ("Contacto:", "entry_contacto"),
+            ("Edad:", "entry_edad"),
+            ("Distancia (ej: 5K, 10K):", "entry_distancia"),
+            ("Email:", "entry_correo"),
+            ("Contacto (Teléfono):", "entry_contacto"),
+            ("Categoría:", "entry_categoria"),
             ("Dorsal:", "entry_dorsal")
         ]
         
@@ -257,10 +260,13 @@ class InterfazParticipantes:
                 p['cedula'],
                 p['nombre'],
                 p['apellido'],
-                p['direccion'],
+                p.get('edad', ''),
+                p.get('distancia', ''),
+                p.get('correo', ''),
                 p['contacto'],
-                p['estado_pago'],
-                p['numero_dorsal'] or ""
+                p.get('categoria', ''),
+                p['numero_dorsal'] or "",
+                p['estado_pago']
             )
             
             # Aplicar colores según estado de pago
@@ -294,14 +300,18 @@ class InterfazParticipantes:
             return
         
         # Obtener valores
-        direccion = self.entries['entry_direccion'].get().strip()
+        edad = self.entries['entry_edad'].get().strip()
+        distancia = self.entries['entry_distancia'].get().strip()
+        correo = self.entries['entry_correo'].get().strip()
         contacto = self.entries['entry_contacto'].get().strip()
-        estado_pago = self.combo_estado.get()
+        categoria = self.entries['entry_categoria'].get().strip()
         numero_dorsal = self.entries['entry_dorsal'].get().strip()
+        estado_pago = self.combo_estado.get()
         
         # Agregar al gestor
         exito, mensaje = self.gestor.agregar_participante(
-            cedula, nombre, apellido, direccion, contacto, estado_pago, numero_dorsal
+            cedula, nombre, apellido, edad, distancia, correo, contacto, 
+            categoria, numero_dorsal, estado_pago
         )
         
         if exito:
@@ -337,16 +347,25 @@ class InterfazParticipantes:
         self.entries['entry_apellido'].delete(0, tk.END)
         self.entries['entry_apellido'].insert(0, valores[2])
         
-        self.entries['entry_direccion'].delete(0, tk.END)
-        self.entries['entry_direccion'].insert(0, valores[3])
+        self.entries['entry_edad'].delete(0, tk.END)
+        self.entries['entry_edad'].insert(0, valores[3])
+        
+        self.entries['entry_distancia'].delete(0, tk.END)
+        self.entries['entry_distancia'].insert(0, valores[4])
+        
+        self.entries['entry_correo'].delete(0, tk.END)
+        self.entries['entry_correo'].insert(0, valores[5])
         
         self.entries['entry_contacto'].delete(0, tk.END)
-        self.entries['entry_contacto'].insert(0, valores[4])
+        self.entries['entry_contacto'].insert(0, valores[6])
         
-        self.combo_estado.set(valores[5])
+        self.entries['entry_categoria'].delete(0, tk.END)
+        self.entries['entry_categoria'].insert(0, valores[7])
         
         self.entries['entry_dorsal'].delete(0, tk.END)
-        self.entries['entry_dorsal'].insert(0, valores[6])
+        self.entries['entry_dorsal'].insert(0, valores[8])
+        
+        self.combo_estado.set(valores[9])
         
         # Actualizar barra de estado
         self.label_estado.config(text=f"📋 Participante seleccionado: {valores[1]} {valores[2]} - Modifica los campos y haz clic en '✏️ Editar Seleccionado'")
@@ -375,10 +394,13 @@ class InterfazParticipantes:
             campos_actualizar = {
                 'nombre': nombre,
                 'apellido': apellido,
-                'direccion': self.entries['entry_direccion'].get().strip(),
+                'edad': self.entries['entry_edad'].get().strip(),
+                'distancia': self.entries['entry_distancia'].get().strip(),
+                'correo': self.entries['entry_correo'].get().strip(),
                 'contacto': self.entries['entry_contacto'].get().strip(),
-                'estado_pago': self.combo_estado.get(),
-                'numero_dorsal': self.entries['entry_dorsal'].get().strip()
+                'categoria': self.entries['entry_categoria'].get().strip(),
+                'numero_dorsal': self.entries['entry_dorsal'].get().strip(),
+                'estado_pago': self.combo_estado.get()
             }
             
             # Actualizar en el gestor
