@@ -18,7 +18,7 @@ class GestorParticipantes:
         self.archivo = archivo_excel
         self.columnas = [
             "Cédula", "Nombre", "Apellido", "Edad", "Distancia",
-            "Correo Electrónico", "Contacto", "Categoría", "Número Dorsal", "Estado Pago"
+            "Género", "Contacto", "Categoría", "Número Dorsal", "Estado Pago"
         ]
         self._inicializar_archivo()
     
@@ -80,7 +80,7 @@ class GestorParticipantes:
             wb.save(self.archivo)
             print(f"✅ Archivo '{self.archivo}' creado exitosamente")
     
-    def agregar_participante(self, cedula, nombre, apellido, edad, distancia, correo, 
+    def agregar_participante(self, cedula, nombre, apellido, edad, distancia, genero, 
                             contacto, categoria, numero_dorsal="", estado_pago="PENDIENTE"):
         """
         Agrega un nuevo participante al archivo Excel
@@ -126,7 +126,7 @@ class GestorParticipantes:
             ws.cell(row=siguiente_fila, column=3).value = apellido
             ws.cell(row=siguiente_fila, column=4).value = str(edad)
             ws.cell(row=siguiente_fila, column=5).value = distancia
-            ws.cell(row=siguiente_fila, column=6).value = correo
+            ws.cell(row=siguiente_fila, column=6).value = genero
             ws.cell(row=siguiente_fila, column=7).value = contacto
             ws.cell(row=siguiente_fila, column=8).value = categoria
             ws.cell(row=siguiente_fila, column=9).value = str(numero_dorsal) if numero_dorsal else ""
@@ -180,7 +180,7 @@ class GestorParticipantes:
                         "apellido": ws.cell(row=fila, column=3).value,
                         "edad": ws.cell(row=fila, column=4).value,
                         "distancia": ws.cell(row=fila, column=5).value,
-                        "correo": ws.cell(row=fila, column=6).value,
+                        "genero": ws.cell(row=fila, column=6).value,
                         "contacto": ws.cell(row=fila, column=7).value,
                         "categoria": ws.cell(row=fila, column=8).value,
                         "numero_dorsal": dorsal_formateado,
@@ -218,7 +218,7 @@ class GestorParticipantes:
                         "apellido": ws.cell(row=fila, column=3).value,
                         "edad": ws.cell(row=fila, column=4).value,
                         "distancia": ws.cell(row=fila, column=5).value,
-                        "correo": ws.cell(row=fila, column=6).value,
+                        "genero": ws.cell(row=fila, column=6).value,
                         "contacto": ws.cell(row=fila, column=7).value,
                         "categoria": ws.cell(row=fila, column=8).value,
                         "numero_dorsal": dorsal_formateado,
@@ -253,7 +253,7 @@ class GestorParticipantes:
                     "apellido": ws.cell(row=fila, column=3).value,
                     "edad": ws.cell(row=fila, column=4).value,
                     "distancia": ws.cell(row=fila, column=5).value,
-                    "correo": ws.cell(row=fila, column=6).value,
+                    "genero": ws.cell(row=fila, column=6).value,
                     "contacto": ws.cell(row=fila, column=7).value,
                     "categoria": ws.cell(row=fila, column=8).value,
                     "numero_dorsal": dorsal_formateado,
@@ -292,7 +292,7 @@ class GestorParticipantes:
                 "apellido": 3,
                 "edad": 4,
                 "distancia": 5,
-                "correo": 6,
+                "genero": 6,
                 "contacto": 7,
                 "categoria": 8,
                 "numero_dorsal": 9,

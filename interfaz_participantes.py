@@ -104,7 +104,7 @@ class InterfazParticipantes:
         scrollbar_x = tk.Scrollbar(frame_tree, orient=tk.HORIZONTAL)
         scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
         
-        columnas = ("Cédula", "Nombre", "Apellido", "Edad", "Distancia", "Email", "Contacto", "Categoría", "Dorsal", "Estado Pago")
+        columnas = ("Cédula", "Nombre", "Apellido", "Edad", "Distancia", "Género", "Contacto", "Categoría", "Dorsal", "Estado Pago")
         self.tree = ttk.Treeview(frame_tree, columns=columnas, show='headings',
                                 yscrollcommand=scrollbar_y.set,
                                 xscrollcommand=scrollbar_x.set,
@@ -169,7 +169,7 @@ class InterfazParticipantes:
             ("Apellido:", "entry_apellido"),
             ("Edad:", "entry_edad"),
             ("Distancia (ej: 5K, 10K):", "entry_distancia"),
-            ("Email:", "entry_correo"),
+            ("Género:", "entry_genero"),
             ("Contacto (Teléfono):", "entry_contacto"),
             ("Categoría:", "entry_categoria"),
             ("Dorsal:", "entry_dorsal")
@@ -262,7 +262,7 @@ class InterfazParticipantes:
                 p['apellido'],
                 p.get('edad', ''),
                 p.get('distancia', ''),
-                p.get('correo', ''),
+                p.get('genero', ''),
                 p['contacto'],
                 p.get('categoria', ''),
                 p['numero_dorsal'] or "",
@@ -302,7 +302,7 @@ class InterfazParticipantes:
         # Obtener valores
         edad = self.entries['entry_edad'].get().strip()
         distancia = self.entries['entry_distancia'].get().strip()
-        correo = self.entries['entry_correo'].get().strip()
+        genero = self.entries['entry_genero'].get().strip()
         contacto = self.entries['entry_contacto'].get().strip()
         categoria = self.entries['entry_categoria'].get().strip()
         numero_dorsal = self.entries['entry_dorsal'].get().strip()
@@ -310,7 +310,7 @@ class InterfazParticipantes:
         
         # Agregar al gestor
         exito, mensaje = self.gestor.agregar_participante(
-            cedula, nombre, apellido, edad, distancia, correo, contacto, 
+            cedula, nombre, apellido, edad, distancia, genero, contacto, 
             categoria, numero_dorsal, estado_pago
         )
         
@@ -353,8 +353,8 @@ class InterfazParticipantes:
         self.entries['entry_distancia'].delete(0, tk.END)
         self.entries['entry_distancia'].insert(0, valores[4])
         
-        self.entries['entry_correo'].delete(0, tk.END)
-        self.entries['entry_correo'].insert(0, valores[5])
+        self.entries['entry_genero'].delete(0, tk.END)
+        self.entries['entry_genero'].insert(0, valores[5])
         
         self.entries['entry_contacto'].delete(0, tk.END)
         self.entries['entry_contacto'].insert(0, valores[6])
@@ -396,7 +396,7 @@ class InterfazParticipantes:
                 'apellido': apellido,
                 'edad': self.entries['entry_edad'].get().strip(),
                 'distancia': self.entries['entry_distancia'].get().strip(),
-                'correo': self.entries['entry_correo'].get().strip(),
+                'genero': self.entries['entry_genero'].get().strip(),
                 'contacto': self.entries['entry_contacto'].get().strip(),
                 'categoria': self.entries['entry_categoria'].get().strip(),
                 'numero_dorsal': self.entries['entry_dorsal'].get().strip(),

@@ -280,6 +280,53 @@
             color: var(--text-dark);
         }
         
+        .distance-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .distance-tab {
+            background: var(--card-bg);
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            padding: 12px 30px;
+            border-radius: 0.2rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .distance-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .distance-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .distance-tab.tab-2k.active {
+            background: #28a745;
+            border-color: #28a745;
+        }
+        
+        .distance-tab.tab-10k.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .distance-tab.tab-20k.active {
+            background: #d4a373;
+            border-color: #d4a373;
+        }
+        
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -324,6 +371,22 @@
                     <div class="number" id="categorias" style="color: #d4a373;">0</div>
                     <div class="label">Categorías</div>
                 </div>
+            </div>
+            
+            <!-- Pestañas de Distancias -->
+            <div class="distance-tabs">
+                <button class="distance-tab tab-2k" onclick="filtrarPorDistancia('2K')" id="tab-2K">
+                    <i class="fas fa-walking"></i> 2K
+                </button>
+                <button class="distance-tab tab-10k active" onclick="filtrarPorDistancia('10K')" id="tab-10K">
+                    <i class="fas fa-running"></i> 10K
+                </button>
+                <button class="distance-tab tab-20k" onclick="filtrarPorDistancia('20K')" id="tab-20K">
+                    <i class="fas fa-fire"></i> 20K
+                </button>
+                <button class="distance-tab" onclick="filtrarPorDistancia('TODAS')" id="tab-TODAS">
+                    <i class="fas fa-trophy"></i> General
+                </button>
             </div>
             
             <!-- Búsqueda -->
@@ -394,6 +457,7 @@
     <script>
         let intervalId = null;
         let todosLosResultados = [];
+        let distanciaActiva = '10K'; // Distancia por defecto
         
         // Cargar resultados al iniciar
         document.addEventListener('DOMContentLoaded', function() {
@@ -416,8 +480,15 @@
                 
                 if (data.success) {
                     todosLosResultados = data.resultados;
-                    mostrarResultados(todosLosResultados);
-                    actualizarEstadisticas(data.resultados);
+                    
+                    // Aplicar filtro de distancia activa
+                    let resultadosFiltrados = todosLosResultados;
+                    if (distanciaActiva !== 'TODAS') {
+                        resultadosFiltrados = todosLosResultados.filter(r => r.Distancia === distanciaActiva);
+                    }
+                    
+                    mostrarResultados(resultadosFiltrados);
+                    actualizarEstadisticas(resultadosFiltrados);
                     document.getElementById('ultimaActualizacion').textContent = 
                         new Date().toLocaleTimeString('es-ES');
                 }
@@ -460,10 +531,14 @@
                 return;
             }
             
-            tbody.innerHTML = resultados.map(r => `
+            // Recalcular posiciones según la distancia filtrada
+            let posicionCalculada = 1;
+            tbody.innerHTML = resultados.map(r => {
+                const pos = posicionCalculada++;
+                return `
                 <tr>
                     <td>
-                        <span class="badge badge-position">#${r.Posición}</span>
+                        <span class="badge badge-position">#${pos}</span>
                     </td>
                     <td>
                         <span class="badge badge-dorsal">${r.Dorsal}</span>
@@ -491,7 +566,8 @@
                         </span>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function actualizarEstadisticas(resultados) {
@@ -509,7 +585,11 @@
             const nombre = document.getElementById('searchNombre').value.trim().toLowerCase();
             const categoria = document.getElementById('selectCategoria').value;
             
+            // Primero filtrar por distancia activa
             let resultadosFiltrados = todosLosResultados;
+            if (distanciaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distanciaActiva);
+            }
             
             if (dorsal) {
                 resultadosFiltrados = resultadosFiltrados.filter(r => 
@@ -537,7 +617,33 @@
             document.getElementById('searchDorsal').value = '';
             document.getElementById('searchNombre').value = '';
             document.getElementById('selectCategoria').value = '';
-            mostrarResultados(todosLosResultados);
+            filtrarResultados();
+        }
+        
+        function filtrarPorDistancia(distancia) {
+            // Actualizar distancia activa
+            distanciaActiva = distancia;
+            
+            // Actualizar clases de pestañas
+            document.querySelectorAll('.distance-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${distancia}`).classList.add('active');
+            
+            // Limpiar búsqueda
+            document.getElementById('searchDorsal').value = '';
+            document.getElementById('searchNombre').value = '';
+            document.getElementById('selectCategoria').value = '';
+            
+            // Filtrar y mostrar
+            let resultadosFiltrados = todosLosResultados;
+            
+            if (distancia !== 'TODAS') {
+                resultadosFiltrados = todosLosResultados.filter(r => r.Distancia === distancia);
+            }
+            
+            mostrarResultados(resultadosFiltrados);
+            actualizarEstadisticas(resultadosFiltrados);
         }
     </script>
 </body>
