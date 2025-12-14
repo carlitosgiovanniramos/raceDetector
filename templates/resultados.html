@@ -327,6 +327,80 @@
             border-color: #d4a373;
         }
         
+        .gender-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .gender-tab {
+            background: var(--card-bg);
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            padding: 10px 25px;
+            border-radius: 0.2rem;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .gender-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .gender-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .gender-tab.tab-femenino.active {
+            background: #e91e63;
+            border-color: #e91e63;
+        }
+        
+        .gender-tab.tab-masculino.active {
+            background: #2196f3;
+            border-color: #2196f3;
+        }
+        
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            background: var(--card-bg);
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            padding: 8px 20px;
+            border-radius: 0.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .category-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .category-tab.active {
+            background: var(--warning-color);
+            color: white;
+            border-color: var(--warning-color);
+        }
+        
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8rem;
@@ -386,6 +460,44 @@
                 </button>
                 <button class="distance-tab" onclick="filtrarPorDistancia('TODAS')" id="tab-TODAS">
                     <i class="fas fa-trophy"></i> General
+                </button>
+            </div>
+            
+            <!-- Pestañas de Género -->
+            <div class="gender-tabs">
+                <button class="gender-tab" onclick="filtrarPorGenero('TODOS')" id="tab-TODOS-genero">
+                    <i class="fas fa-users"></i> Todos
+                </button>
+                <button class="gender-tab tab-femenino" onclick="filtrarPorGenero('Femenino')" id="tab-Femenino">
+                    <i class="fas fa-venus"></i> Femenino
+                </button>
+                <button class="gender-tab tab-masculino" onclick="filtrarPorGenero('Masculino')" id="tab-Masculino">
+                    <i class="fas fa-mars"></i> Masculino
+                </button>
+            </div>
+            
+            <!-- Pestañas de Categoría -->
+            <div class="category-tabs" id="categoryTabs">
+                <button class="category-tab active" onclick="filtrarPorCategoria('TODAS')" id="tab-TODAS-cat">
+                    <i class="fas fa-list"></i> Todas
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('INFANTIL A')" id="tab-INFANTIL-A" style="display: none;">
+                    INFANTIL A
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('INFANTIL B')" id="tab-INFANTIL-B" style="display: none;">
+                    INFANTIL B
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('MASTER A')" id="tab-MASTER-A" style="display: none;">
+                    MASTER A
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('MASTER B')" id="tab-MASTER-B" style="display: none;">
+                    MASTER B
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('MASTER C')" id="tab-MASTER-C" style="display: none;">
+                    MASTER C
+                </button>
+                <button class="category-tab" onclick="filtrarPorCategoria('JUVENIL')" id="tab-JUVENIL" style="display: none;">
+                    JUVENIL
                 </button>
             </div>
             
@@ -458,6 +570,8 @@
         let intervalId = null;
         let todosLosResultados = [];
         let distanciaActiva = '10K'; // Distancia por defecto
+        let generoActivo = 'TODOS'; // Género por defecto
+        let categoriaActiva = 'TODAS'; // Categoría por defecto
         
         // Cargar resultados al iniciar
         document.addEventListener('DOMContentLoaded', function() {
@@ -484,8 +598,25 @@
                     // Aplicar filtro de distancia activa
                     let resultadosFiltrados = todosLosResultados;
                     if (distanciaActiva !== 'TODAS') {
-                        resultadosFiltrados = todosLosResultados.filter(r => r.Distancia === distanciaActiva);
+                        resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distanciaActiva);
                     }
+                    
+                    // Aplicar filtro de género activo
+                    if (generoActivo !== 'TODOS') {
+                        resultadosFiltrados = resultadosFiltrados.filter(r => 
+                            r.Género && r.Género.toLowerCase() === generoActivo.toLowerCase()
+                        );
+                    }
+                    
+                    // Aplicar filtro de categoría activa
+                    if (categoriaActiva !== 'TODAS') {
+                        resultadosFiltrados = resultadosFiltrados.filter(r => 
+                            r.Categoría && r.Categoría.toLowerCase() === categoriaActiva.toLowerCase()
+                        );
+                    }
+                    
+                    // Actualizar botones de categoría al cargar
+                    actualizarBotonesCategoria(distanciaActiva);
                     
                     mostrarResultados(resultadosFiltrados);
                     actualizarEstadisticas(resultadosFiltrados);
@@ -591,6 +722,20 @@
                 resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distanciaActiva);
             }
             
+            // Filtrar por género activo
+            if (generoActivo !== 'TODOS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Género && r.Género.toLowerCase() === generoActivo.toLowerCase()
+                );
+            }
+            
+            // Filtrar por categoría activa
+            if (categoriaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Categoría && r.Categoría.toLowerCase() === categoriaActiva.toLowerCase()
+                );
+            }
+            
             if (dorsal) {
                 resultadosFiltrados = resultadosFiltrados.filter(r => 
                     String(r.Dorsal).includes(dorsal)
@@ -639,11 +784,148 @@
             let resultadosFiltrados = todosLosResultados;
             
             if (distancia !== 'TODAS') {
-                resultadosFiltrados = todosLosResultados.filter(r => r.Distancia === distancia);
+                resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distancia);
+            }
+            
+            // Aplicar filtro de género
+            if (generoActivo !== 'TODOS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Género && r.Género.toLowerCase() === generoActivo.toLowerCase()
+                );
+            }
+            
+            // Aplicar filtro de categoría
+            if (categoriaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Categoría && r.Categoría.toLowerCase() === categoriaActiva.toLowerCase()
+                );
+            }
+            
+            // Actualizar botones de categoría según distancia
+            actualizarBotonesCategoria(distancia);
+            
+            mostrarResultados(resultadosFiltrados);
+            actualizarEstadisticas(resultadosFiltrados);
+        }
+        
+        function filtrarPorGenero(genero) {
+            // Actualizar género activo
+            generoActivo = genero;
+            
+            // Actualizar clases de pestañas
+            document.querySelectorAll('.gender-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${genero}${genero === 'TODOS' ? '-genero' : ''}`).classList.add('active');
+            
+            // Filtrar y mostrar
+            let resultadosFiltrados = todosLosResultados;
+            
+            // Aplicar filtro de distancia
+            if (distanciaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distanciaActiva);
+            }
+            
+            // Aplicar filtro de género
+            if (genero !== 'TODOS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Género && r.Género.toLowerCase() === genero.toLowerCase()
+                );
+            }
+            
+            // Aplicar filtro de categoría
+            if (categoriaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Categoría && r.Categoría.toLowerCase() === categoriaActiva.toLowerCase()
+                );
             }
             
             mostrarResultados(resultadosFiltrados);
             actualizarEstadisticas(resultadosFiltrados);
+        }
+        
+        function filtrarPorCategoria(categoria) {
+            // Actualizar categoría activa
+            categoriaActiva = categoria;
+            
+            // Actualizar clases de pestañas
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            const btnId = categoria === 'TODAS' ? 'tab-TODAS-cat' : `tab-${categoria.replace(' ', '-')}`;
+            const btn = document.getElementById(btnId);
+            if (btn) btn.classList.add('active');
+            
+            // Filtrar y mostrar
+            let resultadosFiltrados = todosLosResultados;
+            
+            // Aplicar filtro de distancia
+            if (distanciaActiva !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => r.Distancia === distanciaActiva);
+            }
+            
+            // Aplicar filtro de género
+            if (generoActivo !== 'TODOS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Género && r.Género.toLowerCase() === generoActivo.toLowerCase()
+                );
+            }
+            
+            // Aplicar filtro de categoría
+            if (categoria !== 'TODAS') {
+                resultadosFiltrados = resultadosFiltrados.filter(r => 
+                    r.Categoría && r.Categoría.toLowerCase() === categoria.toLowerCase()
+                );
+            }
+            
+            mostrarResultados(resultadosFiltrados);
+            actualizarEstadisticas(resultadosFiltrados);
+        }
+        
+        function actualizarBotonesCategoria(distancia) {
+            // Ocultar todos los botones de categoría excepto "Todas"
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.getElementById('tab-TODAS-cat').style.display = 'inline-block';
+            
+            // Mostrar botones según distancia
+            if (distancia === '2K') {
+                // Solo INFANTIL A e INFANTIL B
+                document.getElementById('tab-INFANTIL-A').style.display = 'inline-block';
+                document.getElementById('tab-INFANTIL-B').style.display = 'inline-block';
+            } else if (distancia === '10K' || distancia === '20K') {
+                // MASTER A, B, C y JUVENIL
+                document.getElementById('tab-MASTER-A').style.display = 'inline-block';
+                document.getElementById('tab-MASTER-B').style.display = 'inline-block';
+                document.getElementById('tab-MASTER-C').style.display = 'inline-block';
+                document.getElementById('tab-JUVENIL').style.display = 'inline-block';
+            } else {
+                // TODAS (mostrar todas las categorías)
+                document.getElementById('tab-INFANTIL-A').style.display = 'inline-block';
+                document.getElementById('tab-INFANTIL-B').style.display = 'inline-block';
+                document.getElementById('tab-MASTER-A').style.display = 'inline-block';
+                document.getElementById('tab-MASTER-B').style.display = 'inline-block';
+                document.getElementById('tab-MASTER-C').style.display = 'inline-block';
+                document.getElementById('tab-JUVENIL').style.display = 'inline-block';
+            }
+            
+            // Mantener la selección activa si el botón está visible
+            const btnId = categoriaActiva === 'TODAS' ? 'tab-TODAS-cat' : `tab-${categoriaActiva.replace(' ', '-')}`;
+            const btnActivo = document.getElementById(btnId);
+            
+            // Si el botón activo está oculto, resetear a "Todas"
+            if (btnActivo && btnActivo.style.display === 'none') {
+                categoriaActiva = 'TODAS';
+            }
+            
+            // Actualizar clases active
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            const btnFinal = categoriaActiva === 'TODAS' ? 'tab-TODAS-cat' : `tab-${categoriaActiva.replace(' ', '-')}`;
+            const btn = document.getElementById(btnFinal);
+            if (btn) btn.classList.add('active');
         }
     </script>
 </body>

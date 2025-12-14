@@ -17,6 +17,8 @@ def leer_resultados():
     try:
         if EXCEL_PATH.exists():
             df = pd.read_excel(EXCEL_PATH)
+            # Filtrar registros "No encontrado"
+            df = df[df['Estado'] != 'No encontrado']
             # Convertir a diccionario
             resultados = df.to_dict('records')
             return resultados

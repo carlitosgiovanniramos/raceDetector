@@ -787,6 +787,7 @@ class InterfazDeteccion:
             "Dorsal": dorsal,
             "Nombre": participante.get("nombre", "") if participante else "",
             "Apellido": participante.get("apellido", "") if participante else "",
+            "Género": participante.get("genero", "") if participante else "",
             "Categoría": participante.get("categoria", "") if participante else "",
             "Distancia": participante.get("distancia", "") if participante else "",
             "HoraLlegada": tiempo,
